@@ -1,0 +1,65 @@
+---
+title: "Getting Trees"
+output: html_document
+---
+
+```{r, eval=TRUE}
+
+GetTreeFromOpenTree <- function() {
+	library(rotl)
+	library(ape)
+
+ formica.id <- tnrs_match_names(names=c("cercis"))$ott_id
+
+	# Now get Open Tree's current best estimate of the phylogeny for the group
+	# They call this the tree of life; we can get the subtree for just this group.
+	formica.tree <- tol_subtree(ott_id=formica.id)
+
+	# Let's plot the tree:
+	plot.phylo(formica.tree, type="fan", cex=0.2)
+}
+
+GetTreeFromOpenTree()
+
+	print(paste("The Cercis tree has ", Ntip(formica.tree), " terminals and ",
+	Nnode(formica.tree), " internal nodes out of ",Ntip(formica.tree)-2,
+	" possible, which means it is ",
+	round(100*(Nnode(formica.tree)-1)/(Ntip(formica.tree)-3), 2),
+	"% resolved", sep=""))
+
+	# Open Tree can also return the original studies with the source trees.
+	formica.studies <- studies_find_studies(property="ot:focalCladeOTTTaxonName",
+	value="Cercis")
+	formica.studies.ids <- unlist(formica.studies$study_ids)
+
+	# Let's get info on the first study
+	formica.study1.metadata <- get_study_meta(formica.studies[[1]][[1]])
+	print(get_publication(formica.study1.metadata))
+
+	# And let's get the tree from this study
+	# Look in rotl documentation for the right function
+	# Hint: get_study_trees() is close, but you don't know the tree.id
+  formica.study1.tree1 <- get_study(formica.studies.ids[[1]])
+
+	# And plot it
+	plot.phylo(formica.study1.tree1, type="fan", cex=0.2)
+
+	#Return both trees
+	return.list <- list(formica.tree, formica.study1.tree1)
+	names(return.list) <- c("tol.tree", "study1.tree")
+	print(return.list)
+```
+
+```{r}
+
+#Reading in the trnS-trnG region of the chloroplast genome for Cercis canadensis
+accessions <- c("KT033608.1", "KT033607.1", "KT033606.1", "KT033605.1", "KT033604.1", "KT033600.1", "KT033599.1", "KT033598.1", "KT033597.1", "JN942380.1", "JN942379.1", "JN942378.1", "JN942377.1", "JN942376.1", "JN942375.1", "JN942374.1", "JN942373.1", "JN942372.1", "JN942371.1", "JN942370.1", "KY312912.1")
+sequences <- ape::read.GenBank(accessions)
+
+#Checking for ambiguous bases in the sequences
+ape::base.freq(sequences, all = TRUE)
+
+#Checking the sequence lengths to make sure they are in an expected size range
+head(sequences)
+
+```
