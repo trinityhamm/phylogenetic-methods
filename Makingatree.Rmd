@@ -1,0 +1,38 @@
+---
+title: "Making a tree"
+output: html_document
+---
+
+I downloaded the Windows executable file from the "WindowsExecutables_v8.2.10" [folder](https://github.com/stamatak/standard-RAxML/tree/master/WindowsExecutables_v8.2.10) on the standard-RAxML github page. I downloaded the raxmlHPC-PTHREADS-AVX2.exe file to use.
+
+First, I went through the tutorial to make a parsimony tree based on short sequences from a variety of animals. Before I started trying to make the tree, I renamed the executable file to just "raxml.exe" just to make it shorter to type. I also had to copy and paste their [sequence data](https://cme.h-its.org/exelixis/resource/download/hands-on/dna.phy) into a text document and save it as a .phy file. Once I changed my directory to the one containing these things I was ready to get started with their example using the following code in the command prompt. 
+```{r eval=FALSE}
+raxml.exe -m GTRGAMMA -p 12345 -s dna.phy -# 20 -n T6
+```
+This outputted a bunch of logs and trees, but there was one with the label bestTree. I then read that into RStudio to visualize it, which you can see below.
+```{r}
+library("ape")
+example <- read.tree(file = "./RAxML/RAxML_bestTree.T7")
+plot.phylo(example)
+```
+
+I also used their dna sequence data to make a bootstrapped tree.
+```{r eval=FALSE}
+raxml.exe -m GTRGAMMA -p 12345 -# 20 -s dna.phy -n T13
+```
+And then brought that into RStudio to visualize as well.
+```{r}
+bootstrap <- ape::read.tree(file = "./RAxML/RAxML_bestTree.T13")
+ape::plot.phylo(bootstrap, show.node.label = TRUE)
+```
+
+After executing that, I realized that tree didn't actually have bootstrap values associated with it, so I followed along further in the tutorial and did a couple of extra commands to actually get a tree with support values.I also realized that plot.phylo  
+```{r eval=FALSE}
+raxml.exe -m GTRGAMMA -p 12345 -b 12345 -#100 -s dna.phy -n T14
+raxml.exe -m GTRCAT -p 12345 -f b -t RAxML_bestTree.T13 -z RAxML_bootstrap.T14 -n T15
+```
+I then moved this into R to visualize it.
+```{r}
+actualbootstrap <- ape::read.tree(file = "./RAxML/RAxML_bipartitions.T15")
+ape::plot.phylo(actualbootstrap, show.node.label = TRUE)
+```
